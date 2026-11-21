@@ -2616,7 +2616,8 @@ void MVKPhysicalDevice::initMetalFeatures() {
 		_metalFeatures.samplerClampToBorder = !MVK_TVOS || mvkOSVersionIsAtLeast(16.0);
 		_metalFeatures.samplerMirrorClampToEdge = !MVK_TVOS || mvkOSVersionIsAtLeast(16.0);
 		_metalFeatures.simdReduction = true;
-		_metalFeatures.cooperativeMatrix = true;
+		// SPIRV-Cross converts cooperative matrices to MSL 3.1 simdgroup matrices.
+		_metalFeatures.cooperativeMatrix = mvkOSVersionIsAtLeast(14.0, 17.0, 1.0);
 	}
 
 	if (supportsMTLGPUFamily(Apple10)) {
@@ -3529,6 +3530,9 @@ void MVKPhysicalDevice::initExtensions() {
 	}
 	if (!_metalFeatures.maximalReconvergence) {
 		pWritableExtns->vk_KHR_shader_maximal_reconvergence.enabled = false;
+	}
+	if (!_metalFeatures.cooperativeMatrix) {
+		pWritableExtns->vk_KHR_cooperative_matrix.enabled = false;
 	}
 	if (!_metalFeatures.quadControlFlow || !_metalFeatures.quadPermute) {
 		pWritableExtns->vk_KHR_shader_quad_control.enabled = false;
